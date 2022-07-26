@@ -291,7 +291,7 @@ function getReinforcementCost(type) {
 	return costFactor[type]*1.1**game[type+"Reinforcement"]
 }
 function getReinforcementMult(type,plusLevel = 0) {
-	var RFactor = 0.2 + (game.upgrades[4]*0.5)
+	var RFactor = 0.2 + (game.upgrades[4]*0.3)
 	return 1+RFactor*(game[type+"Reinforcement"]+plusLevel)
 }
 function fix(num,accr=2) {
