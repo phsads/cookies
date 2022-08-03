@@ -5,15 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <style>
+	body, html {
+    		height: 100%;
+    		background-color: #0a0a0a;
+	}     
         * {
             font-family: "Lucida Console", "Courier New", monospace;
             color:whitesmoke;
-        }
-        body {
-            background-color: black;
-            background-size:60px 60px;
-            transform:rotate(0deg)
-        }       
+        }     
         button {
             background-color: #dadada;
             border:1px solid #6868ff;
@@ -54,7 +53,7 @@
             top:70px;
             line-height:120%;
         }
-        #generatorCost,#factoryCost,#demolisherCost,#generatorReinforcementMult,#factoryReinforcementMult,#demolisherReinforcementMult,#generatorReinforcementCost,#factoryReinforcementCost,#demolisherReinforcementCost {
+        #generatorCost,#factoryCost,#demolisherCost,#metalCursorCost,#generatorReinforcementMult,#factoryReinforcementMult,#demolisherReinforcementMult,#metalCursorReinforcementMult,#generatorReinforcementCost,#factoryReinforcementCost,#demolisherReinforcementCost,#metalCursorReinforcementCost {
             color:black;
         }
 	button:hover {
@@ -93,7 +92,7 @@
                 	    	<button onclick="buy('money2')">Convert all cookies to money</button>
                 	</td>
                 	<td class="goal4" hidden>
-                	    	<u>F</u>actories: <span id="factoryAmt">0</span> <br> (<span id="factoryProd0">0</span> CPS)  <span class="goal5" hidden><br>(<span id="factoryProd1"></span> GPS)</span> <br> 
+                	    	<u>F</u>actories: <span id="factoryAmt">0</span> <br> (<span id="factoryProd0">0</span> CPS)  <span class="upg3" hidden><br>(<span id="factoryProd1"></span> GPS)</span> <br> 
                 	    	<button onclick="buy('factory')">Buy a factory! (<span id="factoryCost">4e4</span> money)</button>
                 	</td>
 			<td class="goal5" hidden>
@@ -111,21 +110,38 @@
 				<button onclick="reinforce('factory')">Reinforce your factories <br> <span id="factoryReinforcementMult">(1.0x -> 1.2x)</span> <br> (<span id="factoryReinforcementCost">500</span> Metal)</button>
 				<button class="goal6" onclick="reinforce('demolisher')" hidden>Reinforce your factories <br> <span id="demolisherReinforcementMult">(1.0x -> 1.2x)</span> <br> (<span id="demolisherReinforcementCost">5000</span> Metal)</button>
                 	</td>
+			<td class="goal7" hidden>
+				<u>M</u>etal <u>C</u>ursors: <span id="metalCursorAmt">0</span> <br> (<span id="metalCursorProd">0</span> ClPS) <br>
+				<button onclick="buy('metalCursor')">Buy a metal cursor! (<span id="metalCursorCost">1e7</span> metal)</button>
+				<button class="upg7" onclick="reinforce('metalCursor')" hidden>Reinforce your metal cursors <br> <span id="metalCursorReinforcementMult">(1.0x -> 1.2x)</span> <br> (<span id="metalCursorReinforcementCost">5000</span> Metal)</button>
+			</td>
             	</tr>
         </table>
     	<br>
     	<span id="upgradeEffects">
         	<ul style="text-align:center">
 		<li style="font-weight:bolder">Upgrade effects:</li>
-            	<li id="u1">u1: Generators generate 1x more cookies</li>
-            	<li id="u2">u2: +1 CPC</li>
-		<li id="u3">
+            	<li id="u1" hidden>u1: Generators generate 1x more cookies</li>
+            	<li id="u2" hidden>u2: +1 CPC</li>
+		<li id="u3" hidden>
                 	u3a: Boosts generators by 1x <br>
                 	u3b: Boosts factories by 1x
             	</li>
-		<li id="u4">u4: Factories produce generators</li>
-	    	<li id="u5">u5: 0.2x -> 0.5x reinforcement multiplier</li>
-		<li id="u6">u6: 0.2x -> 0.5x reinforcement multiplier</li>
+		<li id="u4" hidden>u4: Factories produce generators</li>
+	    	<li id="u5" hidden>u5: 0.2x -> 0.5x reinforcement multiplier</li>
+		<li id="u6" hidden>u6: 0.2x -> 0.5x reinforcement multiplier</li>
+		<li id="u7" hidden>u7: 1 clicks / click</li>
+		<li id="u8" hidden>u8: ^1 reinforcement boost</li>
+		<li id="u9" hidden>
+			u9a: u1's exponent is increased by 1/9 <br>
+			u9b: u2's exponent is increased by 9/20 <br>
+			u9c: u3's softcap starts 9x later and the softcap's exponent is increased by 0.09 <br>
+			u9d: u4's exponent is 0.9 (from 0.5) <br>
+			u9e: u5's effect is now 0.9x (from 0.5x) <br>
+			u9f: u6's effect is increased by 99 reinforcement levels <br>
+			u9g: u7a's exponent is increased by 0.09 <br>
+			u9h: u8's base is always 1 <br>
+		</li>
         </ul>
     </span>
 </body>
@@ -157,25 +173,29 @@ function start() {
 		generatorReinforcement:gameSave.generatorReinforcement||0,
 		factoryReinforcement:gameSave.factoryReinforcement||0,
 		demolisherReinforcement:gameSave.demolisherReinforcement||0,
+		metalCursorReinforcement:gameSave.metalCursorReinforcement||0,
+		metalCursor:gameSave.metalCursor||0,
     	}	
     	var a = 0
     	while (a < game.goals) {
         	a++
-        	var unlocks = document.getElementsByClassName("goal"+a), b
-        	for (b in unlocks) {
+        	var unlocks = document.getElementsByClassName("goal"+a)
+        	for (let b in unlocks) {
             		unlocks[b].hidden = false
         	}
     	}
     	var upLength = game.upgrades.length
-    	var unLength = game.upgradesUnlocked.length
-    	while (upLength < 6) {
-        	game.upgrades.push(false)
-        	upLength++
-    	} 
-    	while (unLength < 6) {
-        	game.upgradesUnlocked.push(false)
-        	unLength++
-    	} /* upgrades length */
+    	while (upLength < 9) {
+		game.upgrades.push(false)
+		game.upgradesUnlocked.push(false)
+		upLength++
+	}
+	for (let x in game.upgrades) {
+		var unlocks = document.getElementsByClassName("upg"+x)
+        	for (let b in unlocks) {
+            		unlocks[b].hidden = !game.upgrades[x]
+        	}
+	}
 
 	//weolcm the consl
 	console.log("Welcome to the console!")
@@ -185,12 +205,17 @@ function start() {
 	console.log("	Import the game save by typing importGame() in the console.")
 	console.log("	Hard reset the game save by typing resetGame() in the console.")
 
+	//loops
+	setInterval(function(){saveGame(false)},7500)
+	setInterval(generate,1000)
+	setInterval(update,10)
+	setInterval(updateMPC,60000)
+
 }
 function buy(type) {
     	switch (type) {
         	case "cookie":
-            		game.clicks++
-            		game.cookie += game.cpc
+            		cookieGain(1)
         	break;
         	case "generator":
             		var cost = getCost("generator")
@@ -199,7 +224,8 @@ function buy(type) {
                 		game.generator++
             		}
         	break;
-        	case "u1":
+  		//can be optimized but whatever      	
+		case "u1":
             		if (game.cookie>=200) {
                 		game.upgrades[0] = true
                 		game.cookie-=200
@@ -235,7 +261,25 @@ function buy(type) {
 				game.metal -= 2.5e4
 			}
 		break;
-        	case "money1":
+		case "u7":
+			if (game.cookie >= 1.2e14) {
+				game.upgrades[6] = true
+				game.cookie -= 1.2e14
+			}
+		break;
+		case "u8":
+			if (game.metal >= 1e8) {
+				game.upgrades[7] = true
+				game.metal -= 1e8
+			}
+		break;    
+		case "u9":
+			if (game.metalCursor >= 9) {
+				game.upgrades[8] = true
+				game.metalCursor -= 9
+			}
+		break;
+		case "money1":
         	    	game.money += game.cookie*game.mpc*0.01
         	    	game.cookie *= 0.99
         	break;
@@ -257,6 +301,13 @@ function buy(type) {
         	        	game.demolisher++
         	    	}
         	break;
+		case "metalCursor":
+			var cost = getCost("metalCursor")
+        	    	if (game.metal >= cost) {
+        	        	game.metal -= cost
+        	        	game.metalCursor++
+        	    	}
+		break;
     }
 } //nostalgia when i used to code like this (plus the horrible inefficiency)
 function unlockUpgrades() {
@@ -266,30 +317,50 @@ function unlockUpgrades() {
     if (game.goals >= 5) game.upgradesUnlocked[3] = true
     if (getReinforcementMult("generator") >= 2) game.upgradesUnlocked[4] = true
     if (game.goals >= 6) game.upgradesUnlocked[5] = true
+    if (game.cookie >= 1e14) game.upgradesUnlocked[6] = true
+    if (game.metalCursor >= 3) game.upgradesUnlocked[7] = true
+    if (game.cookie >= 2.4e24) game.upgradesUnlocked[8] = true
 }
 function getUpgradeEffect(x) {
 	switch (x) {
-		case 0: return game.clicks**0.33 ;break;
+		case 0:
+			if (game.upgrades[8]) return game.clicks**(0.33+1/9)
+			else return game.clicks**0.33
+		break;
 		case 1:
-			if (game.generator <= 150) {
-           			return game.generator**2.2/100+1
-        		} else {
-            			return 150**2.2/100+1+(game.generator-150)**1.05
-        		}
+			var x = [1.05]
+			if (game.upgrades[8]) x[0] += 0.45
+			if (game.generator <= 150) return game.generator**2.2/100+1
+        		else return 150**2.2/100+1+(game.generator-150)**x[0]
 		break;
 		case 2:
-			var r = []
-			if (game.factory <= 200) {
-        			r[0] = game.factory/20+1
-    			} else {
-        			r[0] = game.factory**0.2+11
+			var r = [], x = [0.2,200]
+			if (game.upgrades[8]) {
+				x[0] += 0.09
+				x[1] *= 9
+			}
+			if (game.factory <= x[1]) {
+				r[0] = game.factory/20+1
+			} else {
+				r[0] = game.factory**x[0]+x[1]/20+1
     			}	
-    			if (game.generator <= 200) {
+    			if (game.generator <= x[1]) {
         			r[1] = game.generator/20+1
     			} else {
-    				r[1] = game.generator**0.2+11
+    				r[1] = game.generator**x[0]+x[1]/20+1
     			}
 			return r
+		break;
+		case 5:
+			return getReinforcementMult("generator", game.upgrades[8]*99)	
+		break;
+		case 6:
+			return game.cpc ** (0.5 + game.upgrades[8] * 0.09)
+		break;
+		case 7:
+			return 1
+				+((game.metalCursor+game.upgrades[8])/(game.metalCursor+1))
+				*(1+Math.min(game.metalCursor,30)*0.05)
 		break;
 	}
 }
@@ -311,8 +382,11 @@ function update() {
 			"Generators boost CPC.",
 			"Generators and factories boost each other.",
 			"Factories produce generators at a reduced rate.",
-			"Increase the reinforcement multiplier to 0.5x",
+			"Increase the reinforcement multiplier to 0.5x.",
 			"Metal gain is boosted by generator reinforcement multiplier.",
+			"You gain more clicks based on CPC and divides factory cost by number of clicks.",
+			"Increases reinforcement boost based on metal cursors.",
+			"Increases u1-u8 effects by an amount based on the number 9"
 		]
 		var upgCost = [
 			"200.00 cookies",
@@ -321,6 +395,9 @@ function update() {
 			"1.00e7 money",
 			"3.45e6 generators",
 			"2.5e4 metal",
+			"1.2e14 cookies",
+			"1e8 metal",
+			"9 metal cursors",
 		]
 		var t = game.upgrades.lastIndexOf(true)
 		if (t != game.upgrades.length-1) {
@@ -346,14 +423,22 @@ function update() {
     	document.getElementById("demolisherCost").textContent = fix(getCost("demolisher"))
 	document.getElementById("demolisherProd0").textContent = fix(getProduction("demolisher")[0])
 	document.getElementById("demolisherProd1").textContent = fix(getProduction("demolisher")[1])
+	document.getElementById("metalCursorAmt").textContent = fix(game.metalCursor)
+	document.getElementById("metalCursorCost").textContent = fix(getCost("metalCursor"))
+	document.getElementById("metalCursorProd").textContent = fix(getProduction("metalCursor")[0])
     	document.getElementById("u1").textContent = "u1: Generators generate "+fix(getUpgradeEffect(0))+"x more cookies"
     	document.getElementById("u2").textContent = "u2: +"+fix(getUpgradeEffect(1))+" CPC"
     	document.getElementById("u3").innerHTML = "u3a: Boosts generators by "+fix(getUpgradeEffect(2)[0])+"x <br> u3b: Boosts factories by "+fix(getUpgradeEffect(2)[1])+"x"
-	document.getElementById("u6").textContent = "u6: Metal gain is increased by " + fix(getReinforcementMult("generator")) +'x'
+	document.getElementById("u6").textContent = "u6: Metal gain is increased by " + fix(getUpgradeEffect(5)) +'x'
+	document.getElementById("u7").innerHTML = "u7a: " + fix(getUpgradeEffect(6)) + " clicks / click <br>u7b: " + fix(game.clicks) + "x factory cost reduction"
+	document.getElementById("u8").textContent = "u8: ^" + fix(getUpgradeEffect(7)) + " reinforcement  (hardcaps at 30 MC)"
+	if (game.upgrades[8]) {
+		document.getElementById("u5").textContent = "u5: 0.2x -> 0.9x reinforcement multiplier"
+	}
 	document.getElementById("buyGen").hidden = getCost("generator") == Infinity
 	document.getElementById("metal").textContent = fix(game.metal)
 	document.getElementById("metalEff").textContent = fix((getProduction("demolisher")[0]/getProduction("demolisher")[1])||1)
-	var reinforcementTypes = ["generator","factory","demolisher"]
+	var reinforcementTypes = ["generator","factory","demolisher","metalCursor"]
 	for (let b in reinforcementTypes) {
 		var t = reinforcementTypes[b]
 		document.getElementById(t+"ReinforcementMult").textContent = "(" + fix(getReinforcementMult(t)) + "x -> " + fix(getReinforcementMult(t,1)) + "x)"
@@ -367,6 +452,8 @@ function update() {
 		game.cookie>=2e4,
 		game.money>=1e7,
 		game.demolisher>=25,
+		game.cookie>=1e17,
+		game.cookie>=1e47 && game.metal>=1e23,
 	]
 	var nextGoal = [
 		"Goal: Get 10 cookies",
@@ -375,6 +462,8 @@ function update() {
 		"Goal: Get 2e4 cookies",
 		"Goal: Get 1e7 money",
 		"Goal: Get 25 demolishers",
+		"Goal: Get 1e17 cookies",
+		"Goal: Get 1e47 cookies and 1e23 metal",
 	]
 	if (goalReqs[game.goals]) {
 		game.goals++
@@ -389,12 +478,19 @@ function update() {
             		document.getElementById("u"+(b*1+1)).hidden = true
         	}
    	}
+	for (let x in game.upgrades) {
+		var unlocks = document.getElementsByClassName("upg"+x)
+        	for (let b in unlocks) {
+            		unlocks[b].hidden = !game.upgrades[x]
+        	}
+	}
 }
 function generate() {
         game.generator += getProduction("factory")[1]
 	game.generator -= getProduction("demolisher")[1]
 	game.metal += getProduction("demolisher")[0]
     	game.cookie += getProduction("generator")[0]+getProduction("factory")[0]
+	cookieGain(getProduction("metalCursor")[0])
 }
 function getProduction(type) {
 	switch (type) {
@@ -406,27 +502,38 @@ function getProduction(type) {
 			return [game.generator*mult]
 		break;
 		case "factory":
-			var mult = 1
+			var mult = 1, x = [0.5]
+			if (game.upgrades[8]) x[0] = 0.9
 			if (game.upgrades[2]) mult *= getUpgradeEffect(2)[1]
 			mult *= getReinforcementMult("factory")
-			return [game.factory*mult*500,game.factory**0.5*15*mult*game.upgrades[3]]
+			return [game.factory*mult*500,game.factory**x[0]*15*mult*game.upgrades[3]]
 		break;
 		case "demolisher":
 			var mult = 1, eff = 1
 			mult *= getReinforcementMult("demolisher")
-			if (game.upgrades[5]) eff *= getReinforcementMult("generator")
-			var genDestroyed = game.demolisher*mult*eff
+			if (game.upgrades[5]) eff *= getUpgradeEffect(5)
+			var genDestroyed = game.demolisher*mult
 			var genProduction = getProduction("factory")[1]
 			genDestroyed = Math.min(genDestroyed,genProduction/2)
-			return [genDestroyed,genDestroyed/eff]
+			return [genDestroyed*eff,genDestroyed]
+		break;
+		case "metalCursor":
+			var mult = 1
+			mult *= getReinforcementMult("metalCursor")
+			return [game.metalCursor*mult*4]
 		break;
 	}
 }
 function getCost(type) {
 	switch (type) {
 		case "generator":  return Math.round(10*1.1**game.generator);break;
-		case "factory":    return 1.2**game.factory*4e4             ;break;
+		case "factory":    
+			var cost = 1.2**game.factory*4e4
+			if (game.upgrades[6]) cost /= game.clicks
+			return cost
+		break;
 		case "demolisher": return 1.4**game.demolisher*1e9          ;break;
+		case "metalCursor": return 3**game.metalCursor*1e7	    ;break;
 	}
 }
 function reinforce(type) {
@@ -441,19 +548,23 @@ function getReinforcementCost(type) {
 		"generator":50,
 		"factory":500,
 		"demolisher":5000,
+		"metalCursor":1e9,
 	}
 	return costFactor[type]*1.1**game[type+"Reinforcement"]
 }
 function getReinforcementMult(type,plusLevel = 0) {
 	var RFactor = 0.2
 	if (game.upgrades[4]) RFactor = 0.5
-	return 1+RFactor*(game[type+"Reinforcement"]+plusLevel)
+	if (game.upgrades[4] && game.upgrades[8]) RFactor = 0.9
+	var boost = 1+RFactor*(game[type+"Reinforcement"]+plusLevel)
+	if (game.upgrades[7]) boost = boost ** getUpgradeEffect(7)
+	return boost
 }
 function fix(num,accr=2) {
     if (typeof num !== "number") {
         return num
     }
-    if (Infinity>num&&num>999) {
+    if ((Infinity>num&&num>999)||(num<1)) {
         var exp = Math.floor(Math.log10(num))
         var mantissa = Number(num/(10**exp)).toFixed(accr)
         return mantissa+"e"+exp
@@ -503,10 +614,12 @@ function resetGame() {
 		window.location.reload()
 	}
 }
-setInterval(function(){saveGame(false)},7500)
-setInterval(generate,1000)
-setInterval(update,10)
-setInterval(updateMPC,60000)
+function cookieGain(n) {
+	var clicksToGive = 1
+	if (game.upgrades[6]) clicksToGive *= getUpgradeEffect(6)
+	game.clicks += clicksToGive*n
+        game.cookie += game.cpc*n
+}
 /* ideas
 click button to gain 1 cookie
 buy generators for automatic cookies (1/s) (10 cookies)
