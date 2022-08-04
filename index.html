@@ -564,7 +564,7 @@ function fix(num,accr=2) {
     if (typeof num !== "number") {
         return num
     }
-    if ((Infinity>num&&num>999)||(num<1)) {
+    if ((Infinity>num&&num>999)||(num<1&&num>0)) {
         var exp = Math.floor(Math.log10(num))
         var mantissa = Number(num/(10**exp)).toFixed(accr)
         return mantissa+"e"+exp
