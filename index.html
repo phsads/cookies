@@ -342,12 +342,12 @@ function getUpgradeEffect(x) {
 			if (game.factory <= x[1]) {
 				r[0] = game.factory/20+1
 			} else {
-				r[0] = game.factory**x[0]+x[1]/20+1
+				r[0] = (game.factory-x[1])**x[0]+x[1]/20+1
     			}	
     			if (game.generator <= x[1]) {
         			r[1] = game.generator/20+1
     			} else {
-    				r[1] = game.generator**x[0]+x[1]/20+1
+    				r[1] = (game.generator-x[1])**x[0]+x[1]/20+1
     			}
 			return r
 		break;
@@ -515,7 +515,7 @@ function getProduction(type) {
 			var genDestroyed = game.demolisher*mult
 			var genProduction = getProduction("factory")[1]
 			genDestroyed = Math.min(genDestroyed,genProduction/2)
-			return [genDestroyed*eff,genDestroyed]
+			return [genDestroyed*eff*10,genDestroyed*10]
 		break;
 		case "metalCursor":
 			var mult = 1
